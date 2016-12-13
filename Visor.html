@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<!-- saved from url=(0132)file:///media/Montado/Academico/Computacion%20Cientifica/CompuGrafica/Modelagem%20Geometrica/testes/testes/test1%20(c%C3%B3pia).html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta charset="utf-8">
+	<style>
+		canvas { width: 100% !important; height: 100% !important}
+        body{padding: 0px; margin: 0px; }
+        .overcanvas {
+				position: absolute;
+				top: 0px;
+				width: 150px;
+				padding: 5px;
+				font-family: Monospace;
+				font-size: 13px;
+				text-align: left;
+				font-weight: bold;
+        }
+        .footer {
+              position: absolute;
+              bottom:0px;
+              padding: 5px;
+              font-family: Monospace;
+              font-size: 13px;
+              text-align: left;
+              font-weight: bold;
+        }
+	</style>
+    
+	<script src="libs/three80.js"></script>
+    <script src="libs/OBJLoader.js"></script>
+    <script src="libs/OBJExporter.js"></script>
+	<script src="libs/TrackballControls.js"></script>
+	<script src="libs/ThreeSetup.js"></script>
+    <script  type="application/x-javascript" src="libs/lalolib/lalolib.js"></script>
+    <script src="libs/d3.min.js"></script>  
+    <script src="libs/hemesh.js"></script>
+    <script src="libs/subd.js"></script>
+	</head>
+	<body>
+        <div class="overcanvas"><br>
+        <input type="file" id="fileToLoad" >
+        <button id="exportButton">ExportOBJ</button>
+        <button id="diButton">Subdivide</button>            
+        <label id="infomesh" ></label><br/>    
+        </div>
+        <div class="footer">
+            <label id="information" ></label><br/>
+        </div>
+	<script>
+   
+        var setup = new ThreeSetup();
+        var directionalLightUpper = new THREE.DirectionalLight( 0xffffff, 1 );
+        var directionalLightDown = new THREE.DirectionalLight( 0xffffff, 1 );
+        directionalLightUpper.position.set( 0, 0, -10 );
+        directionalLightDown.position.set( 0, 0, 10);
+        //This light's color gets applied to all the objects in the scene globally.
+        var light = new THREE.AmbientLight( 0x404040,0.5 ); // soft white light        
+        var hemesh=new Hemesh();
+        var hewireframe=new Hemesh();
+        var subd={};
+        var subdMesh={};
+		var controlWireGeometry={};
+		var subdGeometry={};
+		var subdInsideGeometry={};
+		var subdWireGeometry={};
+        //var copyMesh={};
+        setup.scene.add(directionalLightDown);
+        setup.scene.add(directionalLightUpper);
+        setup.scene.add(light);
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            setup.resize();
+        }
+
+        function render() {
+                requestAnimationFrame(render);
+                setup.render();
+         
+        }
+        function cancelAnimation(){
+            cancelRender=true;
+        }
+        render();
+        /*var canvaswindows=d3.select("canvas");
+        canvaswindows.on("mousedown",onMouseDown);
+        canvaswindows.on("mouseup",onMouseUp);
+        canvaswindows.on("mousemove",onMouseMove);*/
+	</script>
+    <script src="libs/utils.js"></script>  
+    <script src="libs/ButtonsEvents.js"></script>      
+</body></html>
