@@ -10,10 +10,10 @@ function clear(){
     hewireframe=new Hemesh();
     subd={};
     subdMesh={};
-    controlWireGeometry={};
-    subdGeometry={};
-	subdInsideGeometry={};
-	subdWireGeometry={};
+    controlMeshGeometry={};
+    controlMeshObject={};
+    info.innerHTML="";
+    infovf.innerHTML="";
     console.log("reset all");
 }
 function mergeMeshes (meshes) {
@@ -50,4 +50,13 @@ function fitSubD(subd, size) {
             subd.verts[i].sub(centroid);
             subd.verts[i].multiplyScalar(scale);
         }
+}
+function isQuadMesh(subd){
+    var n=subd.faces.length;
+    for(var i=0;i<n;i++){
+        if(subd.faces[i].length!==4){
+            return false;
+        }
+    }
+    return true;
 }
