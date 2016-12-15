@@ -35,9 +35,15 @@ function loadFileAsText(){
     manager.onProgress =function ( xhr ) {
         if ( xhr.lengthComputable ) {
             var percentComplete = xhr.loaded / xhr.total * 100;
+            var info=document.getElementById("information");
             info.innerHTML= Math.round(percentComplete, 2) + '% downloaded'; 
             //console.log( Math.round(percentComplete, 2) + '% downloaded' );
         }
+    };
+    manager.onError=function ( xhr ) {
+        console.log("error");
+        var info=document.getElementById("information");
+        info.innerHTML= "Error"; 
     };
     var fileReader = new FileReader();
     
@@ -46,16 +52,18 @@ function loadFileAsText(){
         var loader = new THREE.SubDOBJLoader(manager);
         subd = loader.parse(fileLoadedEvent.target.result);
        // if(isQuadMesh(subd)){
-            infovf.innerHTML="Vertices: "+subd.verts.length + "<br>" + "Faces: " + subd.faces.length;
+            
             fitSubD(subd,2);
+            controlMesh=subd;
+            infovf.innerHTML="Vertices: "+subd.verts.length + "<br>" + "Faces: " + subd.faces.length;
             hemesh=new Hemesh();
             hemesh.fromFaceVertexArray(subd.faces,subd.verts);
             hewireframe.fromFaceVertexArray(subd.faces,subd.verts);
+            
             //hemesh.normalize();
             //hewireframe.normalize();
             hemesh.triangulate();
             var wireframeLines = hewireframe.toWireframeGeometry();
-            controlWireGeometry=wireframeLines;
             controlMeshObject = new THREE.LineSegments(wireframeLines,controlMeshMaterial);
             var geo = hemesh.toGeometry();
             geo.computeVertexNormals()
@@ -87,56 +95,18 @@ function toOBJ(){
        info.innerHTML="No mesh";
    }
 }
-
-function backMesh(){
-    var mesh=setup.scene.getObjectByName("meshLimit");
-    var n=mesh.geometry.vertices.length;
-    for(var i=0;i<n;i++){
-        mesh.geometry.vertices[i].set(vx[i],vy[i],vz[i]);
-    }
-    mesh.geometry.verticesNeedUpdate=true;
-    isSmooth=false;
-}
 function subdivideFunction(){
     var mesh=setup.scene.getObjectByName("meshLimit");
     if (mesh) {
         subdMesh = subd;
         subdMesh = subdMesh.smooth();
         //subdMesh.calculateNormals();
-        infovf.innerHTML="Vertices: "+subdMesh.verts.length + "<br>" + "Faces: " + subdMesh.faces.length;
-        hemesh=new Hemesh();
-        hewireframe=new Hemesh();
-        hemesh.fromFaceVertexArray(subdMesh.faces,subdMesh.verts);
-        hewireframe.fromFaceVertexArray(subdMesh.faces,subdMesh.verts);
-        //hemesh.normalize();
-        //hewireframe.normalize();
-        hemesh.triangulate();
-        var wireframeLines = hewireframe.toWireframeGeometry();
-        var wireframe = new THREE.LineSegments(wireframeLines, new THREE.LineBasicMaterial({
-            color: 0xff2222,
-            opacity: 0.2,
-            transparent: true,
-        }));
-        var geo = hemesh.toGeometry();
-        geo.computeVertexNormals();
-        if(document.getElementById("checkRender").checked) var mesh = new THREE.Mesh(geo, phongmaterial);
-        else var mesh = new THREE.Mesh(geo, meshmaterial);
-        var meshl=setup.scene.getObjectByName("meshLimit");
-        var wire=setup.scene.getObjectByName("wireframe");
-        if(mesh!==undefined) setup.scene.remove(meshl);
-        if(wire!==undefined) setup.scene.remove(wire);
-       
-        wireframe.name="wireframe";
-        mesh.name="meshLimit";
-        setup.scene.add(mesh);
-        setup.scene.add(wireframe);
-        if(!document.getElementById("checkWireframe").checked) wireframe.visible=false;
+        renderToScene(subdMesh);
         subd=subdMesh;
    }
    else{
        info.innerHTML="No mesh";
-   }
-       
+   }     
 }
 function phongRender(){
     var mesh=setup.scene.getObjectByName("meshLimit");
@@ -170,10 +140,15 @@ function showWireframe(){
         if(wireframe) wireframe.visible=false;
     }
 }
-
+function resetSubdivision(){
+    var mesh=setup.scene.getObjectByName("meshLimit");
+    if(mesh){
+        subd=controlMesh;
+    }
+}
 d3.select("#fileToLoad").on("change",loadFileAsText);
 d3.select("#exportButton").on("click",toOBJ);
 d3.select("#diButton").on("click",subdivideFunction);
 d3.select("#checkRender").on("click",phongRender);
 d3.select("#checkCM").on("click",showControlMesh);
-d3.select("#checkWireframe").on("click",showWireframe);
+d3.select("#oriButton").on("click",resetSubdivision);

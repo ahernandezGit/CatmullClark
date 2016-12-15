@@ -60,3 +60,32 @@ function isQuadMesh(subd){
     }
     return true;
 }
+function renderToScene(subdStructure){
+        infovf.innerHTML="Vertices: "+subdMesh.verts.length + "<br>" + "Faces: " + subdMesh.faces.length;
+        hemesh=new Hemesh();
+        hewireframe=new Hemesh();
+        hemesh.fromFaceVertexArray(subdStructure.faces,subdStructure.verts);
+        hewireframe.fromFaceVertexArray(subdStructure.faces,subdStructure.verts);
+        //hemesh.normalize();
+        //hewireframe.normalize();
+        hemesh.triangulate();
+        var wireframeLines = hewireframe.toWireframeGeometry();
+        var wireframe = new THREE.LineSegments(wireframeLines, new THREE.LineBasicMaterial({
+            color: 0xff2222,
+            opacity: 0.2,
+            transparent: true,
+        }));
+        var geo = hemesh.toGeometry();
+        geo.computeVertexNormals();
+        if(document.getElementById("checkRender").checked) var mesh = new THREE.Mesh(geo, phongmaterial);
+        else var mesh = new THREE.Mesh(geo, meshmaterial);
+        var meshl=setup.scene.getObjectByName("meshLimit");
+        var wire=setup.scene.getObjectByName("wireframe");
+        if(mesh!==undefined) setup.scene.remove(meshl);
+        if(wire!==undefined) setup.scene.remove(wire);
+        wireframe.name="wireframe";
+        mesh.name="meshLimit";
+        setup.scene.add(mesh);
+        setup.scene.add(wireframe);
+        if(!document.getElementById("checkWireframe").checked) wireframe.visible=false;
+}
