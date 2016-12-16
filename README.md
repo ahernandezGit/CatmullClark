@@ -5,7 +5,10 @@ This repository is a demo implementation of the Catmull-Clark Subdivision algori
 ## Usage of the demo
 
 Import Obj Button: Import .obj file (prefered onbly quad-based)
+
 Export OBj Button: Export like .obj file in quad-based faces.
+
 Subdivide Button: Apply one step of the subdivision Catmull-clark algorithm.
+
 Original Mesh: Go back to the original charged model.
 
