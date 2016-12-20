@@ -123,7 +123,11 @@ Hemesh.prototype.addFaces = function(faces, notNew) {
 	}
 
 	for(var i=0; i < faces.length; ++i) {
-		this.addFace(faces[i]);
+		var f=this.addFace(faces[i]);
+        if(f!==undefined && f<0){
+            console.log("Faces problems");
+            return HEMESH_INVALID_IDX;
+        }
 	}
 }
 
@@ -693,7 +697,8 @@ Hemesh.prototype.fromFaceVertexArray = function(faces,vertices) {
 	for(var i=0; i < vertices.length; ++i) {
 		this.addVertex(vertices[i]);
 	}
-	this.addFaces(faces);
+	var fs=this.addFaces(faces);
+    return fs;
 }
 
 Hemesh.prototype.toOBJ = function() {

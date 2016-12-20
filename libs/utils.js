@@ -61,31 +61,62 @@ function isQuadMesh(subd){
     return true;
 }
 function renderToScene(subdStructure){
-        infovf.innerHTML="Vertices: "+subdMesh.verts.length + "<br>" + "Faces: " + subdMesh.faces.length;
+        infovf.innerHTML="Vertices: "+subdStructure.verts.length + "<br>" + "Faces: " + subdStructure.faces.length;
         hemesh=new Hemesh();
         hewireframe=new Hemesh();
-        hemesh.fromFaceVertexArray(subdStructure.faces,subdStructure.verts);
-        hewireframe.fromFaceVertexArray(subdStructure.faces,subdStructure.verts);
+        var hem=hemesh.fromFaceVertexArray(subdStructure.faces,subdStructure.verts);
+        var hew=hewireframe.fromFaceVertexArray(subdStructure.faces,subdStructure.verts);
         //hemesh.normalize();
         //hewireframe.normalize();
-        hemesh.triangulate();
+        if(hem===undefined && hew===undefined){
+            hemesh.triangulate();
+            var wireframeLines = hewireframe.toWireframeGeometry();
+            var wireframe = new THREE.LineSegments(wireframeLines, new THREE.LineBasicMaterial({
+                color: 0xff2222,
+                opacity: 0.2,
+                transparent: true,
+            }));
+            var geo = hemesh.toGeometry();
+            geo.computeVertexNormals();
+            if(document.getElementById("checkRender").checked) var mesh = new THREE.Mesh(geo, phongmaterial);
+            else var mesh = new THREE.Mesh(geo, meshmaterial);
+            var meshl=setup.scene.getObjectByName("meshLimit");
+            var wire=setup.scene.getObjectByName("wireframe");
+            if(mesh!==undefined) setup.scene.remove(meshl);
+            if(wire!==undefined) setup.scene.remove(wire);
+            wireframe.name="wireframe";
+            mesh.name="meshLimit";
+            setup.scene.add(mesh);
+            setup.scene.add(wireframe);
+            if(!document.getElementById("checkWireframe").checked) wireframe.visible=false;
+        }
+}
+function loadServerModel(url) {
+    clear();
+    var manager = new THREE.LoadingManager();
+    manager.onProgress =function ( xhr ) {
+        if ( xhr.lengthComputable ) {
+            var percentComplete = xhr.loaded / xhr.total * 100;
+            var info=document.getElementById("information");
+            info.innerHTML= Math.round(percentComplete, 2) + '% downloaded'; 
+            //console.log( Math.round(percentComplete, 2) + '% downloaded' );
+        }
+    };
+    manager.onError=function ( xhr ) {
+        console.log("error");
+        info.innerHTML= "Error"; 
+    };
+    var loader = new THREE.SubDOBJLoader(manager);
+    loader.load(url, function(structure) {
+        subd=structure;
+        fitSubD(subd,2);
+        controlMesh=subd;
+        renderToScene(subd);
         var wireframeLines = hewireframe.toWireframeGeometry();
-        var wireframe = new THREE.LineSegments(wireframeLines, new THREE.LineBasicMaterial({
-            color: 0xff2222,
-            opacity: 0.2,
-            transparent: true,
-        }));
-        var geo = hemesh.toGeometry();
-        geo.computeVertexNormals();
-        if(document.getElementById("checkRender").checked) var mesh = new THREE.Mesh(geo, phongmaterial);
-        else var mesh = new THREE.Mesh(geo, meshmaterial);
-        var meshl=setup.scene.getObjectByName("meshLimit");
-        var wire=setup.scene.getObjectByName("wireframe");
-        if(mesh!==undefined) setup.scene.remove(meshl);
-        if(wire!==undefined) setup.scene.remove(wire);
-        wireframe.name="wireframe";
-        mesh.name="meshLimit";
-        setup.scene.add(mesh);
-        setup.scene.add(wireframe);
-        if(!document.getElementById("checkWireframe").checked) wireframe.visible=false;
+        controlMeshObject = new THREE.LineSegments(wireframeLines,controlMeshMaterial);
+        controlMeshObject.name="controlMesh";
+        setup.scene.add(controlMeshObject); 
+        if(!isQuadMesh(subd) && info.innerHTML!=="" ) info.innerHTML+= "<br> Warning: Control Mesh is not quad-based"; 
+        if(!isQuadMesh(subd) && info.innerHTML==="" ) info.innerHTML= "Warning: Control Mesh is not quad-based";   
+    });			
 }

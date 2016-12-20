@@ -31,6 +31,7 @@ function saveTextAsFile(textToWrite){
 function loadFileAsText(){
     clear();
     var fileToLoad = document.getElementById("fileToLoad").files[0];
+    //console.log(document.getElementById("fileToLoad").files);
     var manager = new THREE.LoadingManager();
     manager.onProgress =function ( xhr ) {
         if ( xhr.lengthComputable ) {
@@ -51,33 +52,35 @@ function loadFileAsText(){
 	{
         var loader = new THREE.SubDOBJLoader(manager);
         subd = loader.parse(fileLoadedEvent.target.result);
-       // if(isQuadMesh(subd)){
-            
+       // if(isQuadMesh(subd)){ 
             fitSubD(subd,2);
             controlMesh=subd;
             infovf.innerHTML="Vertices: "+subd.verts.length + "<br>" + "Faces: " + subd.faces.length;
             hemesh=new Hemesh();
-            hemesh.fromFaceVertexArray(subd.faces,subd.verts);
-            hewireframe.fromFaceVertexArray(subd.faces,subd.verts);
-            
+            var hem=hemesh.fromFaceVertexArray(subd.faces,subd.verts);
+            var hew=hewireframe.fromFaceVertexArray(subd.faces,subd.verts);
             //hemesh.normalize();
             //hewireframe.normalize();
-            hemesh.triangulate();
-            var wireframeLines = hewireframe.toWireframeGeometry();
-            controlMeshObject = new THREE.LineSegments(wireframeLines,controlMeshMaterial);
-            var geo = hemesh.toGeometry();
-            geo.computeVertexNormals()
-            if(document.getElementById("checkRender").checked) var mesh = new THREE.Mesh(geo, phongmaterial);
-            else var mesh = new THREE.Mesh(geo, meshmaterial);
-            setup.scene.add(mesh);
-            controlMeshObject.name="controlMesh";
-            mesh.name="meshLimit";
-            setup.scene.add(controlMeshObject);    
-        /*}
-        else{
-            info.innerHTML= "Control Mesh is not quad-based";   
-        }*/
-            if(!isQuadMesh(subd)) info.innerHTML= "Warning: Control Mesh is not quad-based";   
+            if(hem===undefined && hew===undefined){
+                hemesh.triangulate();
+                var wireframeLines = hewireframe.toWireframeGeometry();
+                controlMeshObject = new THREE.LineSegments(wireframeLines,controlMeshMaterial);
+                var geo = hemesh.toGeometry();
+                //geo.computeVertexNormals()
+                if(document.getElementById("checkRender").checked) var mesh = new THREE.Mesh(geo, phongmaterial);
+                else var mesh = new THREE.Mesh(geo, meshmaterial);
+                setup.scene.add(mesh);
+                controlMeshObject.name="controlMesh";
+                mesh.name="meshLimit";
+                setup.scene.add(controlMeshObject);    
+            /*}
+            else{
+                info.innerHTML= "Control Mesh is not quad-based";   
+            }*/
+                if(!isQuadMesh(subd) && info.innerHTML!=="" ) info.innerHTML+= "<br> Warning: Control Mesh is not quad-based";   
+                if(!isQuadMesh(subd) && info.innerHTML==="" ) info.innerHTML= "Warning: Control Mesh is not quad-based";   
+                
+            }
     };
   
     fileReader.readAsText(fileToLoad);
@@ -144,6 +147,7 @@ function resetSubdivision(){
     var mesh=setup.scene.getObjectByName("meshLimit");
     if(mesh){
         subd=controlMesh;
+        renderToScene(subd);  
     }
 }
 d3.select("#fileToLoad").on("change",loadFileAsText);
@@ -152,3 +156,5 @@ d3.select("#diButton").on("click",subdivideFunction);
 d3.select("#checkRender").on("click",phongRender);
 d3.select("#checkCM").on("click",showControlMesh);
 d3.select("#oriButton").on("click",resetSubdivision);
+d3.select("#checkWireframe").on("click",showWireframe);
+loadServerModel("models/head.obj");
